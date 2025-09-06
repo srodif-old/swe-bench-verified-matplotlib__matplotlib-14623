@@ -2379,7 +2379,9 @@ class LogLocator(Locator):
         if not np.isfinite(vmin) or not np.isfinite(vmax):
             return 1, 10  # initial range, no data plotted yet
 
-        if vmin > vmax:
+        # Remember the original ordering to preserve axis inversion intent
+        original_inverted = vmin > vmax
+        if original_inverted:
             vmin, vmax = vmax, vmin
         if vmax <= 0:
             cbook._warn_external(
@@ -2395,6 +2397,10 @@ class LogLocator(Locator):
         if vmin == vmax:
             vmin = _decade_less(vmin, self._base)
             vmax = _decade_greater(vmax, self._base)
+        
+        # Restore original ordering if it was inverted
+        if original_inverted:
+            vmin, vmax = vmax, vmin
         return vmin, vmax
 
 

@@ -184,6 +184,39 @@ def test_invalid_log_lims():
     assert ax.get_ylim() == original_ylim
 
 
+def test_logscale_invert_limits():
+    """Test that log scales can be inverted using axis limits (issue #14623)."""
+    y = np.linspace(100000, 1, 100)
+    x = np.exp(-np.linspace(0, 1, y.size))
+
+    # Test linear scale inversion (should work)
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+    ax.set_yscale('linear')
+    ax.set_ylim(y.max(), y.min())
+    ylim_linear = ax.get_ylim()
+    assert ylim_linear[0] > ylim_linear[1], "Linear scale should be inverted"
+    plt.close(fig)
+
+    # Test log scale inversion (this was broken before the fix)
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+    ax.set_yscale('log')
+    ax.set_ylim(y.max(), y.min())
+    ylim_log = ax.get_ylim()
+    assert ylim_log[0] > ylim_log[1], "Log scale should be inverted"
+    plt.close(fig)
+
+    # Test that normal (non-inverted) log scale still works
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+    ax.set_yscale('log')
+    ax.set_ylim(y.min(), y.max())
+    ylim_normal = ax.get_ylim()
+    assert ylim_normal[0] < ylim_normal[1], "Normal log scale should not be inverted"
+    plt.close(fig)
+
+
 @image_comparison(baseline_images=['function_scales'], remove_text=True,
                   extensions=['png'], style='mpl20')
 def test_function_scale():
